@@ -1,0 +1,6 @@
+{
+ "from": "en",
+ "to": "de",
+ "source": "Invoice INV-2026-0042 is due on 6 October 2026. The total is $12,450.50, including VAT of 19%.\n\nPlease pay to IBAN DE89 3704 0044 0532 0130 00. Questions: billing@acme-corp.com or +49 30 1234567.\n\nThis agreement between Acme Industries GmbH and Northwind Traders Ltd. runs until 31 December 2027, with a penalty of 2.5% per month. See https://acme-corp.com/terms.",
+ "target": "Die Rechnung INV-2026-0042 ist am 6. Oktober 2026 fällig. Der Gesamtbetrag beträgt 12.450,50 $, einschließlich 19 % Mehrwertsteuer.\n\nBitte überweisen Sie auf die IBAN DE89 3704 0044 0532 0130 00. Fragen: billing@acme-corp.com oder +49 30 1234567.\n\nDiese Vereinbarung zwischen der Acme Industries GmbH und der Northwind Traders Ltd. läuft bis zum 31. Dezember 2027, mit einer Vertragsstrafe von 2,5 % pro Monat. Siehe https://acme-corp.com/terms."
+}

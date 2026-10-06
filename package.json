@@ -1,0 +1,13 @@
+{
+  "name": "carryover",
+  "version": "0.1.0",
+  "description": "Checks that every number, date, amount and name in a text survives translation.",
+  "type": "module",
+  "bin": { "carryover": "bin/carryover.js" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "bench": "node test/bench.js"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}

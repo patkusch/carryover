@@ -1,0 +1,6 @@
+{
+ "from": "en",
+ "to": "es",
+ "source": "Payment is due 03/04/2026 (US format).\n\nThe interest rate is 4.75% on a balance of USD 1,000,000.\n\nSigned in Madrid by Elena Ruiz and Tomás Peña.",
+ "target": "El pago vence el 4 de marzo de 2026.\n\nLa tasa de interés es del 4,75 % sobre un saldo de 1.000.000 USD.\n\nFirmado en Madrid por Elena Ruiz y Tomás Peña."
+}
