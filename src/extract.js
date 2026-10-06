@@ -14,6 +14,10 @@ const CUR = String.raw`(?:US\$|R\$|\$|€|£|¥|₹|₦|USD|EUR|GBP|CHF|JPY|CAD|
 const CODE = { 'us$': 'USD', 'r$': 'BRL', $: 'USD', '€': 'EUR', '£': 'GBP', '¥': 'JPY', '₹': 'INR', '₦': 'NGN', euro: 'EUR', euros: 'EUR', dollar: 'USD', dollars: 'USD', dólar: 'USD', dólares: 'USD' };
 const currencyCode = (c) => CODE[c.toLowerCase()] || c.toUpperCase();
 
+// "5 million" and "5 Mio." must be the same amount, and "5 billion" must not be.
+const SCALE = String.raw`(?:millions?|Millionen?|millón|millones|milhão|milhões|milione|milioni|Mio\.?|Mill\.?|milliards?|Milliarden?|Mrd\.?|billions?|bilhão|bilhões|thousand|mil millones)`;
+const SCALE_VALUE = (w) => { const x = w.toLowerCase().replace(/\.$/, ''); return /^(mil millones|milliards?|milliarden?|mrd|billions?|bilh)/.test(x) ? 1e9 : /^thousand/.test(x) ? 1e3 : 1e6; };
+
 const SUFFIXES = ['GmbH', 'AG', 'KG', 'UG', 'e\\.K\\.', 'Ltd\\.?', 'Limited', 'LLC', 'LLP', 'Inc\\.?', 'Corp\\.?', 'PLC', 'S\\.A\\.S\\.', 'S\\.A\\.', 'S\\.L\\.', 'SARL', 'S\\.r\\.l\\.', 'SRL', 'B\\.V\\.', 'N\\.V\\.', 'Pty', 'Ltda\\.?', 'SpA', 'S\\.p\\.A\\.', 'A\\/S']
   .sort((a, b) => b.length - a.length);
 const DETERMINERS = new Set(['der', 'die', 'das', 'den', 'dem', 'the', 'le', 'la', 'les', 'el', 'los', 'las', 'il', 'lo', 'de', 'het', 'o', 'a', 'os', 'as']);
@@ -91,9 +95,14 @@ export function extract(text, { lang, names = false } = {}) {
     return { kind: 'entity', keys: [strip(words.join(' ')) + ' ' + strip(m[2]).replace(/[.\s/]/g, '')] };
   });
 
+  const scaled = (n, w) => String(Number(canonicalNumber(n, lang)) * SCALE_VALUE(w));
+  take(new RegExp(`(${CUR})\\s?(${NUM})\\s?(${SCALE})(?![\\p{L}])`, 'giu'), (m) => ({ kind: 'money', keys: [`${currencyCode(m[1])}:${scaled(m[2], m[3])}`] }));
+  take(new RegExp(`${BEFORE}(${NUM})\\s?(${SCALE})\\s?(${CUR})(?![\\p{L}])`, 'giu'), (m) => ({ kind: 'money', keys: [`${currencyCode(m[3])}:${scaled(m[1], m[2])}`] }));
+  take(new RegExp(`${BEFORE}(${NUM})\\s?(${SCALE})(?![\\p{L}])`, 'giu'), (m) => ({ kind: 'number', keys: [scaled(m[1], m[2])] }));
   take(new RegExp(`(${CUR})\\s?(${NUM})(?!\\d)`, 'giu'), (m) => ({ kind: 'money', keys: [`${currencyCode(m[1])}:${canonicalNumber(m[2], lang)}`] }));
   take(new RegExp(`${BEFORE}(${NUM})\\s?(${CUR})(?![\\p{L}])`, 'giu'), (m) => ({ kind: 'money', keys: [`${currencyCode(m[2])}:${canonicalNumber(m[1], lang)}`] }));
   take(new RegExp(`${BEFORE}(${NUM})\\s?(?:%|percent|per cent|por ciento|por cento|per cento|pour cent|Prozent|procent)`, 'giu'), (m) => ({ kind: 'percent', keys: [canonicalNumber(m[1], lang)] }));
+  take(new RegExp(`${BEFORE}(${NUM})\\s?(km/h|mph|km²|m²|m³|°C|°F|kWh|kHz|km|cm|mm|kg|mg|ml|cl|kW|MW|MB|GB|TB|Hz|m|g|l)(?![\\p{L}\\d])`, 'gu'), (m) => ({ kind: 'quantity', keys: [canonicalNumber(m[1], lang) + ' ' + m[2]] }));
   take(new RegExp(`${BEFORE}(${NUM})`, 'gu'), (m) => ({ kind: 'number', keys: [canonicalNumber(m[1], lang)] }));
 
   if (names) {

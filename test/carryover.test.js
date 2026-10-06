@@ -118,8 +118,48 @@ test('every planted error in every fixture is caught', async () => {
 
 // Known limits, pinned so the README stays honest. If one of these starts failing
 // because the checker got better, move it into the "caught" tests above.
-test('limits: it cannot see a dropped "not", a number written as words, or a lost unit', () => {
-  assert.equal(run('The seller is not liable for 5 days.', 'Der Verkäufer haftet für 5 Tage.').ok, true);
+test('limits: it cannot see a number written as words', () => {
+  assert.equal(run('The seller is not liable for 5 days.', 'Der Verkäufer haftet für 5 Tage.').ok, true); // no languages given, so no negation check
   assert.equal(run('Pay five hundred euros.', 'Zahlen Sie fünfzig Euro.').ok, true);
-  assert.equal(run('The pipe is 5 km long.', 'Das Rohr ist 5 m lang.').ok, true);
+});
+
+test('measurements keep their unit, whatever the number format', () => {
+  assert.deepEqual(kinds(run('The pipe is 5 km long.', 'Das Rohr ist 5 m lang.')), ['changed:quantity']);
+  assert.equal(run('Speed limit 2.5 kg per box.', 'Höchstmenge 2,5 kg pro Karton.', { sourceLang: 'en', targetLang: 'de' }).ok, true);
+  assert.equal(run('Water at 20 °C.', 'Wasser bei 20 °C.').ok, true);
+  assert.deepEqual(kinds(run('Water at 20 °C.', 'Wasser bei 20 °F.')), ['changed:quantity']);
+});
+
+test('"million" and "Mio." agree, and a wrong scale is caught', () => {
+  assert.equal(run('The deal is worth $5 million.', 'Das Geschäft ist 5 Mio. $ wert.', { sourceLang: 'en', targetLang: 'de' }).ok, true);
+  assert.equal(run('About 2.5 million users.', 'Etwa 2,5 Millionen Nutzer.', { sourceLang: 'en', targetLang: 'de' }).ok, true);
+  assert.deepEqual(kinds(run('The deal is worth $5 billion.', 'Das Geschäft ist 5 Mio. $ wert.')), ['changed:money']);
+});
+
+test('a lost "not" is flagged as a warning when the languages are known', () => {
+  const r = run('The seller is not liable for 5 days.', 'Der Verkäufer haftet für 5 Tage.', { sourceLang: 'en', targetLang: 'de' });
+  assert.equal(r.ok, true);
+  assert.deepEqual(kinds(r), ['negation:negation']);
+  assert.equal(run('The seller is not liable.', 'Der Verkäufer haftet nicht.', { sourceLang: 'en', targetLang: 'de' }).issues.length, 0);
+  assert.deepEqual(kinds(run('Der Verkäufer haftet.', 'The seller is not liable.', { sourceLang: 'de', targetLang: 'en' })), ['negation:negation']);
+  assert.equal(run('No refunds after 30 days.', 'No hay reembolsos después de 30 días.', { sourceLang: 'en', targetLang: 'es' }).issues.length, 0);
+});
+
+test('a translation memory file is checked segment by segment', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'carryover-'));
+  const tmx = `<?xml version="1.0"?><tmx version="1.4"><body>
+<tu><tuv xml:lang="en"><seg>Pay <b>$500,000</b> by 5 May 2026.</seg></tuv><tuv xml:lang="de-DE"><seg>Zahlen Sie 500.000 $ bis zum 5. Mai 2026.</seg></tuv></tu>
+<tu><tuv xml:lang="en"><seg>Smith &amp; Sons Ltd pays 40%.</seg></tuv><tuv xml:lang="de"><seg>Smith &amp; Sons Ltd zahlt 4 %.</seg></tuv></tu>
+</body></tmx>`;
+  const f = join(dir, 'm.tmx');
+  writeFileSync(f, tmx);
+  const r = spawnSync('node', ['bin/carryover.js', f, '--from', 'en', '--to', 'de']);
+  assert.equal(r.status, 1);
+  const out = r.stdout.toString();
+  assert.match(out, /2 segments checked, 1 problem/);
+  assert.match(out, /Segment 2/);
+  assert.doesNotMatch(out, /Segment 1/);
+  const t = join(dir, 'm.tsv');
+  writeFileSync(t, 'Pay 5 days.\tZahlen Sie 5 Tage.\nPay 5 days.\tZahlen Sie 6 Tage.\n');
+  assert.equal(spawnSync('node', ['bin/carryover.js', t, '--from', 'en', '--to', 'de']).status, 1);
 });

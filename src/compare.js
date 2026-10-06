@@ -1,6 +1,7 @@
 import { extract, strip } from './extract.js';
+import { hasNegation } from './negation.js';
 
-const LABEL = { number: 'number', money: 'amount', percent: 'percentage', date: 'date', email: 'email address', url: 'web address', iban: 'bank account number (IBAN)', phone: 'phone number', id: 'reference', entity: 'company name', name: 'name' };
+const LABEL = { number: 'number', money: 'amount', percent: 'percentage', quantity: 'measurement', date: 'date', email: 'email address', url: 'web address', iban: 'bank account number (IBAN)', phone: 'phone number', id: 'reference', entity: 'company name', name: 'name' };
 
 function distance(a, b) {
   const row = Array.from({ length: b.length + 1 }, (_, j) => j);
@@ -78,6 +79,10 @@ export function check(sourceText, targetText, { sourceLang, targetLang, names = 
   units.forEach(([s, t], i) => {
     const sf = extract(s, { lang: sourceLang, names });
     const tf = extract(t, { lang: targetLang });
+    const ns = hasNegation(s, sourceLang), nt = hasNegation(t, targetLang);
+    if (ns !== null && nt !== null && ns !== nt) {
+      result.issues.push({ type: 'negation', kind: 'negation', severity: 'warning', label: 'negation', paragraph: aligned ? i + 1 : null, source: ns ? 'has a negation' : 'has none', target: nt ? 'has a negation' : 'has none' });
+    }
     for (const issue of compareFacts(sf, tf, t)) result.issues.push({ ...issue, label: LABEL[issue.kind], paragraph: aligned ? i + 1 : null });
   });
   result.errors = result.issues.filter((i) => i.severity === 'error').length;
@@ -91,5 +96,6 @@ export function describe(issue) {
   if (issue.type === 'changed') return `Changed ${what}: "${issue.source}" became "${issue.target}"`;
   if (issue.type === 'missing') return `Missing from the translation, ${what}: "${issue.source}"`;
   if (issue.type === 'added') return `Not in the original, ${what}: "${issue.target}"`;
+  if (issue.type === 'negation') return `Possible lost or added "not": the original ${issue.source}, the translation ${issue.target}. Check the meaning`;
   return `Name not found in the translation (it may have been translated): "${issue.source}"`;
 }
