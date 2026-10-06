@@ -46,9 +46,9 @@ node bin/carryover.js memory.tsv --from en --to de
 
 ## How well does it work?
 
-`npm run bench` takes six correct translations (English↔German, French, Spanish, Portuguese), breaks them one fact at a time, either by deleting it or by changing one digit, and counts what the checker catches. Today that is **89 of 89**.
+`npm run bench` takes eight correct translations (English with German, French, Spanish, Portuguese, Italian and Dutch), breaks them one fact at a time, either by deleting it or by changing one digit, and counts what the checker catches. Today that is **109 of 109**.
 
-That number is a floor on honesty, not a promise. The six texts were written for this tool, the errors are planted by a script, and real mistranslations are stranger. Treat it as proof that the basic checks work, not as an accuracy rating.
+That number is a floor on honesty, not a promise. The eight texts were written for this tool, the errors are planted by a script, and real mistranslations are stranger. Treat it as proof that the basic checks work, not as an accuracy rating.
 
 ## What it cannot see
 
