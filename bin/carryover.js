@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { check, describe } from '../src/compare.js';
+import { writeFileSync } from 'node:fs';
+import { toHtml } from '../src/html.js';
 import { parseTmx, parseTsv } from '../src/tm.js';
 
 const args = process.argv.slice(2);
@@ -11,6 +13,7 @@ for (let i = 0; i < args.length; i++) {
   else if (a === '--names') opt.names = true;
   else if (a === '--whole') opt.whole = true;
   else if (a === '--json') opt.json = true;
+  else if (a === '--html') opt.html = args[++i];
   else if (a === '--from') opt.from = args[++i];
   else if (a === '--to') opt.to = args[++i];
   else if (a.startsWith('--')) { console.error(`Unknown option ${a}. Try --help.`); process.exit(2); }
@@ -27,6 +30,7 @@ if (opt.help || (opt.files.length !== 2 && !memory)) {
   --names        also look for people and place names (a warning, not an error)
   --whole        compare the two texts as one block, not paragraph by paragraph
   --json         machine-readable result
+  --html FILE    also write a one-page report you can send to a translator
 
 Exit code 0 if nothing was lost or changed, 1 if something was, 2 if it could not run.`);
   process.exit(opt.help ? 0 : 2);
@@ -62,6 +66,7 @@ try {
   console.error(`Could not read the files: ${e.message}`);
   process.exit(2);
 }
+if (opt.html) writeFileSync(opt.html, toHtml(result));
 if (opt.json) console.log(JSON.stringify(result, null, 2));
 else {
   console.log(result.ok ? `PASS  nothing lost or changed${result.warnings ? `, ${result.warnings} warning(s)` : ''}` : `FAIL  ${result.errors} problem${result.errors === 1 ? '' : 's'} found`);

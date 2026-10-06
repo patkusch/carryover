@@ -72,6 +72,7 @@ Use it as a safety net next to a human reviewer, not instead of one.
 | `--names` | also compare people and place names (skipped for German source text, which capitalises every noun) |
 | `--whole` | compare as one block even if the paragraphs line up |
 | `--json` | machine-readable result, for use in a pipeline |
+| `--html report.html` | also write a one-page report you can send to a translator or client |
 
 ## Tests
 
