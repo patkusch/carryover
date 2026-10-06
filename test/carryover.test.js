@@ -167,11 +167,11 @@ test('a translation memory file is checked segment by segment', () => {
 test('the HTML report lists problems and escapes text', () => {
   const dir = mkdtempSync(join(tmpdir(), 'carryover-'));
   const a = join(dir, 'a.txt'), b = join(dir, 'b.txt'), out = join(dir, 'r.html');
-  writeFileSync(a, 'Pay <b>$500</b> to ACME.');
-  writeFileSync(b, 'Zahlen Sie <b>50</b> $ an ACME.');
+  writeFileSync(a, 'Pay $500 to <b>ACME</b>.');
+  writeFileSync(b, 'Zahlen Sie 50 $ an <b>ACME</b>.');
   spawnSync('node', ['bin/carryover.js', a, b, '--html', out]);
   const html = readFileSync(out, 'utf8');
   assert.match(html, /Fail/);
   assert.match(html, /Changed amount/);
-  assert.ok(!html.includes('<b>$500'));
+  assert.ok(!html.includes('<b>'));
 });
