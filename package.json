@@ -1,6 +1,10 @@
 {
   "name": "carryover",
   "version": "0.1.0",
+  "author": "patkusch",
+  "repository": { "type": "git", "url": "git+https://github.com/patkusch/carryover.git" },
+  "homepage": "https://github.com/patkusch/carryover#readme",
+  "bugs": { "url": "https://github.com/patkusch/carryover/issues" },
   "description": "Checks that every number, date, amount and name in a text survives translation.",
   "type": "module",
   "bin": { "carryover": "bin/carryover.js" },
