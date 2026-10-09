@@ -1,5 +1,7 @@
 # Carryover
 
+[![ci](https://github.com/patkusch/carryover/actions/workflows/ci.yml/badge.svg)](https://github.com/patkusch/carryover/actions/workflows/ci.yml)
+
 Did every number, date, amount and name survive the translation?
 
 A translation can read perfectly and still turn $500,000 into $50,000. Carryover finds the facts in the original, finds the facts in the translation, and tells you which ones were lost, changed or invented. It does not translate and it does not judge style.
