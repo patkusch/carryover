@@ -87,3 +87,7 @@ CI runs them on Node 20, 22 and 24.
 ## Licence
 
 MIT
+
+---
+
+[Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
